@@ -52,7 +52,7 @@ end;
 
 procedure TForm1.Button1Click(Sender: TObject);
 begin
-  toby.start(PAnsiChar('toby'), PAnsiChar('require("../../../app.js")') );
+  toby.start(PAnsiChar('toby'), PAnsiChar(AnsiString(Memo1.Text)));
 end;
 
 procedure TForm1.Button2Click(Sender: TObject);
