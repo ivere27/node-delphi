@@ -3,7 +3,7 @@ program Project1;
 uses
   Vcl.Forms,
   Unit1 in 'Unit1.pas' {Form1},
-  TobyPascal in 'TobyPascal.pas';
+  TobyPascal in '..\TobyPascal.pas';
 
 {$R *.res}
 

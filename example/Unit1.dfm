@@ -2,7 +2,7 @@ object Form1: TForm1
   Left = 0
   Top = 0
   Caption = 'Form1'
-  ClientHeight = 281
+  ClientHeight = 310
   ClientWidth = 418
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -18,7 +18,7 @@ object Form1: TForm1
     Left = 8
     Top = 8
     Width = 402
-    Height = 169
+    Height = 193
     Lines.Strings = (
       #39'use strict'#39
       ''
@@ -26,7 +26,7 @@ object Form1: TForm1
       'var foo = '#39'foo'#39';'
       ''
       'toby.on('#39'test'#39', function(x){'
-      '  console.log(`node :: toby.on(test) = ${x}`);'
+      '  toby.hostCall('#39'echo'#39' , x);'
       '});'
       ''
       'var result = toby.hostCall('#39'dory'#39', {num, foo});'
@@ -35,20 +35,27 @@ object Form1: TForm1
   end
   object Memo2: TMemo
     Left = 8
-    Top = 208
+    Top = 238
     Width = 402
     Height = 64
-    Lines.Strings = (
-      'Memo2')
     TabOrder = 1
   end
   object Button1: TButton
     Left = 8
-    Top = 177
+    Top = 207
     Width = 75
     Height = 25
-    Caption = 'Button1'
+    Caption = 'init node.js'
     TabOrder = 2
     OnClick = Button1Click
+  end
+  object Button2: TButton
+    Left = 89
+    Top = 207
+    Width = 75
+    Height = 25
+    Caption = 'emit '#39'test'#39
+    TabOrder = 3
+    OnClick = Button2Click
   end
 end

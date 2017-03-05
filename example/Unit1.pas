@@ -11,8 +11,10 @@ type
     Memo1: TMemo;
     Memo2: TMemo;
     Button1: TButton;
+    Button2: TButton;
     procedure FormCreate(Sender: TObject);
     procedure Button1Click(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -30,29 +32,42 @@ implementation
 procedure tobyOnLoad(isolate: Pointer); cdecl;
 begin
   writeln('host :: tobyOnLoad called');
-
-  toby.run('console.log("node :: hi~");');
+  Form1.Memo2.Lines.Add('host :: tobyOnLoad called');
+  toby.run(PAnsiChar('setInterval(function(){toby.hostCall("dory", num++);},1000);'));
+  toby.run(PAnsiChar('console.log("node :: hi~");'));
 end;
-function tobyHostCall(key,value: PChar):PChar; cdecl;
+procedure tobyOnUnload(isolate: Pointer; exitCode: Integer); cdecl;
 begin
-  Form1.Memo2.Lines.Add(key);
+  writeln('host :: tobyOnUnload called. ', exitCode);
+  Form1.Memo2.Lines.Add('host :: tobyOnUnLoad called ' + IntToStr(exitCode));
+end;
+function tobyHostCall(key,value: PAnsiChar):PAnsiChar; cdecl;
+begin
   writeln('host :: tobyHostCall called. ', key, ' : ',value);
-  exit('from tobyHostCall');
+  Form1.Memo2.Lines.Add('host :: tobyHostCall called. ' + key + ' : ' + value);
+  exit(PAnsiChar('from tobyHostCall'));
 end;
 
 procedure TForm1.Button1Click(Sender: TObject);
 begin
-  toby.start('toby', 'console.log(42);');
-  //writeln('............');
+  toby.start(PAnsiChar('toby'), PAnsiChar(Memo1.Text));
+end;
+
+procedure TForm1.Button2Click(Sender: TObject);
+begin
+  toby.emit(PAnsiChar('test'), PAnsiChar('hi toby'));
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
+  // for test purpose
+  AllocConsole;
+
   // start Toby
   toby := TToby.Create;
   toby.onLoad := @tobyOnLoad;
+  toby.onUnLoad := @tobyOnUnload;
   toby.onHostCall := @tobyHostCall;
-//  toby.start(PChar(ParamStr(0)), Memo1.Lines.GetText);
 end;
 
 end.
