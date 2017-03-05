@@ -33,7 +33,9 @@ procedure tobyOnLoad(isolate: Pointer); cdecl;
 begin
   writeln('host :: tobyOnLoad called');
   Form1.Memo2.Lines.Add('host :: tobyOnLoad called');
-  toby.run(PAnsiChar('setInterval(function(){toby.hostCall("dory", num++);},1000);'));
+
+  // dummy loop
+  toby.run(PAnsiChar('setInterval(function(){},1000);'));
   toby.run(PAnsiChar('console.log("node :: hi~");'));
 end;
 procedure tobyOnUnload(isolate: Pointer; exitCode: Integer); cdecl;
@@ -50,7 +52,7 @@ end;
 
 procedure TForm1.Button1Click(Sender: TObject);
 begin
-  toby.start(PAnsiChar('toby'), PAnsiChar(Memo1.Text));
+  toby.start(PAnsiChar('toby'), PAnsiChar('require("../../../app.js")') );
 end;
 
 procedure TForm1.Button2Click(Sender: TObject);
@@ -60,9 +62,6 @@ end;
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-  // for test purpose
-  AllocConsole;
-
   // start Toby
   toby := TToby.Create;
   toby.onLoad := @tobyOnLoad;
