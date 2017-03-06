@@ -29,9 +29,9 @@ procedure tobyInit(processName, userScript: PAnsiChar;
                    tobyOnLoad: TobyOnloadCB;
                    tobyOnUnload: TobyOnunloadCB;
                    tobyHostCall: TobyHostcallCB); cdecl; external 'tobynode.dll';
-function tobyJSCompile(source: PAnsiChar):PAnsiChar; cdecl; external 'tobynode.dll';
-function tobyJSCall(name, value: PAnsiChar):PAnsiChar; cdecl; external 'tobynode.dll';
-function tobyJSEmit(name, value: PAnsiChar):PAnsiChar; cdecl; external 'tobynode.dll';
+function tobyJSCompile(source, dest: PAnsiChar; n: integer):integer; cdecl; external 'tobynode.dll';
+function tobyJSCall(name, value, dest: PAnsiChar; n: integer):integer; cdecl; external 'tobynode.dll';
+function tobyJSEmit(name, value: PAnsiChar):integer; cdecl; external 'tobynode.dll';
 
 implementation
 var
@@ -89,8 +89,16 @@ begin
 end;
 
 function TToby.run(source: PAnsiChar) : PAnsiChar;
+var
+  dest: Array[0..1024] of AnsiChar;
+  ret: integer;
 begin
-  exit(tobyJSCompile(source));
+  ret := tobyJSCompile(source, dest, Length(dest));
+
+  if (ret < 0) then
+    writeln('** Error ', ret, ' ', dest);
+
+  exit(dest);
 end;
 
 end.
