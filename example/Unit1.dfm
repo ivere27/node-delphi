@@ -30,7 +30,10 @@ object Form1: TForm1
       '});'
       ''
       'var result = toby.hostCall('#39'dory'#39', {num, foo});'
-      'console.log(`node :: toby.hostCall() = ${result}`);')
+      '// an error raised in non-console mode'
+      '// console.log(`node :: toby.hostCall() = ${result}`);'
+      ''
+      'setInterval(function(){},1000); // dummy loop')
     TabOrder = 0
   end
   object Memo2: TMemo

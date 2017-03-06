@@ -29,23 +29,30 @@ implementation
 
 {$R *.dfm}
 
+procedure LOG(line: String);
+var
+  stdout: THandle;
+begin
+  stdout := GetStdHandle(Std_Output_Handle);
+  Win32Check(stdout <> Invalid_Handle_Value);
+
+  if (stdout <> 0) then
+    writeln(line);
+end;
+
 procedure tobyOnLoad(isolate: Pointer); cdecl;
 begin
-  writeln('host :: tobyOnLoad called');
+  LOG('host :: tobyOnLoad called');
   Form1.Memo2.Lines.Add('host :: tobyOnLoad called');
-
-  // dummy loop
-  toby.run(PAnsiChar('setInterval(function(){},1000);'));
-  toby.run(PAnsiChar('console.log("node :: hi~");'));
 end;
 procedure tobyOnUnload(isolate: Pointer; exitCode: Integer); cdecl;
 begin
-  writeln('host :: tobyOnUnload called. ', exitCode);
+  LOG('host :: tobyOnUnload called. ' + IntToStr(exitCode));
   Form1.Memo2.Lines.Add('host :: tobyOnUnLoad called ' + IntToStr(exitCode));
 end;
 function tobyHostCall(key,value: PAnsiChar):PAnsiChar; cdecl;
 begin
-  writeln('host :: tobyHostCall called. ', key, ' : ',value);
+  LOG('host :: tobyHostCall called. ' + key + ' : ' + value);
   Form1.Memo2.Lines.Add('host :: tobyHostCall called. ' + key + ' : ' + value);
   exit(PAnsiChar('from tobyHostCall'));
 end;
