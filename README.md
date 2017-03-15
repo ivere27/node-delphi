@@ -1,5 +1,8 @@
 # node-delphi
 
+## GUI Example
+![alt tag](https://github.com/ivere27/node-delphi/blob/master/doc/delphi-gui.png?raw=true)
+
 ## Console Example
 ![alt tag](https://github.com/ivere27/node-delphi/blob/master/doc/delphi-console.png?raw=true)
 
