@@ -3,7 +3,7 @@ unit TobyPascal;
 interface
 
 uses
-  Classes, SysUtils, math;
+  Classes, SysUtils, math, Windows;
 
 type
   TobyOnloadCB = procedure (isolate: Pointer); cdecl;
@@ -13,11 +13,19 @@ type
   TToby = class
     private
       started : boolean;
+      H: HINST;
       constructor Init;
     public
       onLoad : TobyOnloadCB;
       onUnload : TobyOnunloadCB;
       onHostCall : TobyHostcallCB;
+
+      InputPipeRead  : THandle;
+      InputPipeWrite : THandle;
+      OutputPipeRead  : THandle;
+      OutputPipeWrite : THandle;
+      ErrorPipeRead  : THandle;
+      ErrorPipeWrite : THandle;
 
       function start(processName, userScript: PAnsiChar) : boolean;
       function run(source: PAnsiChar) : PAnsiChar;
@@ -25,17 +33,17 @@ type
       class function Create: TToby;
   end;
 
-procedure tobyInit(processName, userScript: PAnsiChar;
-                   tobyOnLoad: TobyOnloadCB;
-                   tobyOnUnload: TobyOnunloadCB;
-                   tobyHostCall: TobyHostcallCB); cdecl; external 'tobynode.dll';
-function tobyJSCompile(source, dest: PAnsiChar; n: integer):integer; cdecl; external 'tobynode.dll';
-function tobyJSCall(name, value, dest: PAnsiChar; n: integer):integer; cdecl; external 'tobynode.dll';
-function tobyJSEmit(name, value: PAnsiChar):integer; cdecl; external 'tobynode.dll';
-
 implementation
 var
   Singleton : TToby = nil;
+  security : TSecurityAttributes;
+  tobyInit:procedure (processName, userScript: PAnsiChar;
+                     tobyOnLoad: TobyOnloadCB;
+                     tobyOnUnload: TobyOnunloadCB;
+                     tobyHostCall: TobyHostcallCB); cdecl;
+  tobyJSCompile:function (source, dest: PAnsiChar; n: integer):integer; cdecl;
+  tobyJSCall:function (name, value, dest: PAnsiChar; n: integer):integer; cdecl;
+  tobyJSEmit: function(name, value: PAnsiChar):integer; cdecl;
 
 
 procedure _OnLoad(isolate: Pointer); cdecl;
@@ -53,7 +61,46 @@ begin
 end;
 
 constructor TToby.Init;
+var
+  stdout: THandle;
 begin
+  // in case of 'git bash'(mingw) in windows
+  stdout := GetStdHandle(Std_Output_Handle);
+  Win32Check(stdout <> Invalid_Handle_Value);
+
+  if (stdout = 0) then
+  begin
+
+    With security do
+    begin
+      nlength := SizeOf(TSecurityAttributes) ;
+      binherithandle := true;
+      lpsecuritydescriptor := nil;
+    end;
+
+    // FIXME : check returns
+    CreatePipe(InputPipeRead, InputPipeWrite, @security, 0);
+    CreatePipe(OutputPipeRead,OutputPipeWrite, @security, 0);
+    CreatePipe(ErrorPipeRead, ErrorPipeWrite, @security, 0);
+    SetStdHandle(Std_Input_Handle, InputPipeRead);
+    SetStdHandle(Std_Output_Handle, OutputPipeWrite);
+    SetStdHandle(Std_Error_Handle, ErrorPipeWrite);
+  end;
+
+  // dynamically load the dll.
+  H := LoadLibrary('tobynode.dll');
+
+  if H<=0 then
+  begin
+    raise Exception.Create('tobynode.dll error!');
+    exit;
+  end;
+
+  @tobyInit := GetProcAddress(H, Pchar('tobyInit'));
+  @tobyJSCompile := GetProcAddress(H, Pchar('tobyJSCompile'));
+  @tobyJSCall := GetProcAddress(H, Pchar('tobyJSCall'));
+  @tobyJSEmit := GetProcAddress(H, Pchar('tobyJSEmit'));
+
   started := false;
 
   // set default.
